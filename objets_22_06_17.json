@@ -1,0 +1,123 @@
+[
+	{
+		"id": "10001",
+		"name": "BD l'arabe du futur",
+		"section": "culture&multimédia",
+		"description": "Riad Sattouf",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10002",
+		"name": "BD Maus",
+		"section": "culture&multimédia",
+		"description": "Art Spiegelman",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10003",
+		"name": "CD Man Child",
+		"section": "culture&multimédia",
+		"description": "Herbie Hancock",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10004",
+		"name": "DVD L'atelier du peintre",
+		"section": "culture&multimédia",
+		"description": "Cirque Plume",
+		"complement": "genre: cirque contemporain",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10005",
+		"name": "DVD intégrale les shadoks",
+		"section": "culture&multimédia",
+		"description": "Jacques Rouxel",
+		"complement": "genre: animé",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30006",
+		"name": "Jeu de plateau Mr Jack",
+		"section": "loisirs",
+		"description": "2 joueurs - ~30 min/partie",
+		"complement": "à partir de 9 ans",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30007",
+		"name": "Jeu de ping pong",
+		"section": "loisirs",
+		"description": "2 raquettes - 1 filet extensible",
+		"complement": "4 balles de ping pong",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30008",
+		"name": "Jeu de plateau Sandwich",
+		"section": "loisirs",
+		"description": "3 à 6 joueurs - ~15 min/partie",
+		"complement": "à partir de 7 ans",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30009",
+		"name": "Jeu de plateau Sobek",
+		"section": "loisirs",
+		"description": "2 à 4 joueurs - ~40min/partie",
+		"complement": "à partir de 13 ans",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10010",
+		"name": "Livre Guide du récif corallien mer Rouge",
+		"section": "culture&multimédia",
+		"description": "Helmut Debelius",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10011",
+		"name": "Livre Routard Grèce",
+		"section": "culture&multimédia",
+		"description": "Iles grecques et Athènes",
+		"complement": "édition 2015/16",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "10012",
+		"name": "Livre Routard Norvège",
+		"section": "culture&multimédia",
+		"description": "+Malmö & Göteborg",
+		"complement": "édition 2016/17",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30013",
+		"name": "Livre musique Omnibook",
+		"section": "loisirs",
+		"description": "Charlie Parker",
+		"complement": "en Mi",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "30014",
+		"name": "rollers",
+		"section": "loisirs",
+		"description": "taille 46 - marque K2",
+		"complement": "avec protections coudes/genous & poignets",
+		"ownerMail": "adumaine@cisco.com"
+	},
+	{
+		"id": "70015",
+		"name": "raspberry pi 1",
+		"section": "high tech",
+		"description": "prêté sans connectiques",
+		"ownerMail": "sbahbouh@cisco.com"
+	},
+	{
+		"id": "10016",
+		"name": "lonely planet Brésil",
+		"section": "culture&multimédia",
+		"ownerMail": "paulvand@cisco.com"
+	}
+]
