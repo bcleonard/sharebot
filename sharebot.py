@@ -286,7 +286,7 @@ if __name__ == '__main__':
     spark_headers["Authorization"] = "Bearer " + spark_token
 
     # Setup Web Hook to process demo room messages
-    webhook_id = setup_webhook(bot_url, "webhook")
+    webhook_id = setup_webhook(bot_url + ":" + args.localport, "webhook")
     #sys.stderr.write("sharebot Web Hook ID: " + webhook_id + "\n")
 
 
