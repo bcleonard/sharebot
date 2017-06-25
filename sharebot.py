@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Flask, request, abort
 # import the requests library so we can use it to make REST calls
 import requests
@@ -5,9 +7,12 @@ import json
 import time
 import datetime
 import urllib2
+import tablequery
+
+from tablequery import *
+from s3accessor import getS3url
 
 #from democonfig import *
-
 
 spark_headers = {}
 spark_headers["Content-type"] = "application/json; charset=utf-8"
@@ -17,14 +22,11 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 
-# Read key value from this server
-# curl -X GET -H "X-Device-Secret: 12345" http://localhost:9090/getcmdbykey?key=temp
-# curl -X GET -H "X-Device-Secret: 12345" http://localhost:9090/getvaluebykey?key=temp
 
 def getmessage(message_id):
     # login to developer.ciscospark.com and copy your access token here
     # Never hard-code access token in production environment
-    print ("ade: getmessage")
+    print ("ade: getmessage with id:"+message_id)
     # create request url using message ID
     get_rooms_url = "https://api.ciscospark.com/v1/messages/" + message_id
     # send the GET request and do not verify SSL certificate for simplicity of this example
@@ -37,21 +39,11 @@ def getmessage(message_id):
     # get the text value from the response
     if api_response.status_code == 200 :
         text = response_json["text"]
+        print("From Spark, message is:"+text)
         # return the text value
         return text
     else :
         return ""
-
-##-------------------------------------------
-# webhook from spark
-@app.route('/', methods=['GET'])
-def inputFromGet():
-    print("ade: input from get !!")
-    # Get the json data
-    json = request.json
-    # parse the message id, person id, person email, and room id
-    # ToDo: force constraints for json parsing - not required for demo
-    return
 
 ##-------------------------------------------
 # webhook from spark
@@ -86,6 +78,27 @@ def setup_webhook(target, webhook_name = "webhook"):
     webhook = page.json()
     return webhook
 
+
+def structureResp(item):
+    s = item['nom']
+    if "complement" in item:
+        s += item['complement']
+    s+= item['id']
+    file = getS3url(item['id'])
+
+    ret = {
+        'response': s,
+        'photo': file
+    }
+
+    return ret
+
+def sayThankYou():
+    s = "# :( mauvaise nouvelle ... Sharebot n'a pas trouvé  !! \n"
+    s+= " Sharebot veut être gentil et serviable, mais mon patron a du me câbler à l'envers :)\n"
+    s+= " Pensez à moi si vous trouvez cet objet, je serai gentil et serviable pour les autres, promis !\n"
+    return s
+
 ##-------------------------------------------
 # webhook from spark
 @app.route('/', methods =['POST'])
@@ -93,6 +106,7 @@ def inputFromSpark():
     print("ade: input from spark !!")
     # Get the json data
     json = request.json
+    print(json)
     # parse the message id, person id, person email, and room id
     # ToDo: force constraints for json parsing - not required for demo
     message_id = json["data"]["id"]
@@ -100,28 +114,42 @@ def inputFromSpark():
     person_email = json["data"]["personEmail"]
     room_id = json["data"]["roomId"]
 
-    print("ade: with data!"+person_id +person_email)
-    print("ade: bot_email = "+bot_email)
+    print("ade: message id:" +message_id)
 
     # First make sure not processing a message from the bot
-    if person_email is bot_email:
+    if person_email == bot_email:
+        print("ade: return as message is from self !")
         return ''
 
     # convert the message id into readable text
     message = getmessage(message_id)
+    print("From Spark (in main loop), message is:" + message)
     arr = message.split(' ')
 
     if len(arr) >= 1 :
-        sparkorder=arr[0]
+        section_nickname=arr[0]
     if len(arr) >= 2:
-        sparkkey=arr[1]
+        value=arr[1]
 
-    if sparkorder == "cherche"and len(sparkkey) >= 1:
-           toSpark("not found in categories, neither in objects :(", room_id)
-    elif sparkorder == "help":
-        toSpark(getHelpMenu(""), room_id)
+    section = getSection(section_nickname)
+
+    if section != "help" and len(value) >= 1:
+           i = 0
+           print("ade: call to table !")
+           resp = queryOnTable(section,value.lower())
+           for i in resp['Items']:
+               print(i['section'].encode("utf-8", "ignore"))
+               print(i['nom'].encode("utf-8", "ignore"))
+               ret = structureResp(i)
+               print("ade: response:"+ret['response'])
+               print("ade: file constructed:"+ret['photo'])
+               toSpark(ret['response'],room_id,ret['photo'])
+
+           if i == 0:
+               toSpark(sayThankYou(),room_id,None)
+
     else:
-        toSpark(getHelpMenu("command not found "), room_id)
+        toSpark(getHelpMenu("Sharebot n'a pas compris ce message :" +message+"\n"), room_id, None)
 
     return 'Ok'
 
@@ -134,19 +162,31 @@ def getHelpMenu(sometext):
     else:
         helpString = ""
 
-    helpString +="-- Help Menu --"
-    helpString += "Here is a snippet of the available commands:"
-    helpString += "sharebot liste {}"
-    return helpString
+    helpString +="## -- Menu d'aide --\n"
+    helpString += "Voici quelques commandes que je connais :\n"
+    helpString += " - catalogue BD (pour chercher dans tout le catalogue !)\n"
+    helpString += " - culture livre (pour chercher dans la **section culture** les objets 'livre')\n"
+    helpString += " - brico perceuse (pour chercher dans la **section brico** les objets 'perceuse')\n"
+    helpString += "\n"
+    helpString += "voici les sections que je connais: [culture,jardin,loisirs,brico,bebe,cuisine,tech,autre]\n"
+    return helpString.encode("utf-8", "ignore")
 
 
 ##-------------------------------------------
 # POST Function  that sends sometext in markdown to a Spark room
-def toSpark(sometext, room_id):
+def toSpark(sometext, room_id, file):
     print("ade: toSpark!")
     url = 'https://api.ciscospark.com/v1/messages'
-    values =   {'roomId': room_id, 'markdown': sometext }
+    values = {
+        'roomId': room_id,
+        'markdown': sometext,
+    }
+
+    if not file is None:
+        values['files'] = file
+
     data = json.dumps(values)
+    print ("ade: before sending back to spark, print data: "+data)
     req = urllib2.Request(url = url , data = data , headers = spark_headers)
     response = urllib2.urlopen(req)
     the_page = response.read()
@@ -243,5 +283,5 @@ if __name__ == '__main__':
     webhook_id = setup_webhook(bot_url, "webhook")
     #sys.stderr.write("sharebot Web Hook ID: " + webhook_id + "\n")
 
-    print ("ade: before run")
+
     app.run(host='0.0.0.0' , port=local_port)

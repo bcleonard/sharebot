@@ -6,34 +6,33 @@ import decimal
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 
-table = dynamodb.Table('shareEntreprise_catalogue')
+table = dynamodb.Table('catalogue')
 
-with open("objets_22_06_17.json") as json_file:
-    catalogue = json.load(json_file,encoding='latin1')
+with open("objets_22_06_17_v2.json") as json_file:
+    catalogue = json.load(json_file,encoding='utf-8')
     for item in catalogue:
         description = None
         complement = None
         
-        id = item['id']
-        name = item['name']
         section = item['section']
-        if "description" in item :
-            description = item['description']
+        id = item['id']
+        nom = item['nom']
+        ownerMail = item['ownerMail']
         if "complement" in item :
             complement = item['complement']
-        ownerMail = item['ownerMail']
 
         i={
-           'id': id,
-           'name': name,
            'section': section,
+           'nom': nom,
+           'id': id,
            'ownerMail': ownerMail,
         }
-        if not description is None:
-            i['description']  = description
+
         if not complement is None:
-            i['complement']  = complement
+            i['complement'] = complement
 
         print("Adding item:", id)
             
-        table.put_item(Item=i)
+        response = table.put_item(Item=i)
+        print(response['ResponseMetadata']['RetryAttempts'])
+        print(response['ResponseMetadata']['HTTPStatusCode'])
