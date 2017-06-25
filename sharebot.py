@@ -80,10 +80,16 @@ def setup_webhook(target, webhook_name = "webhook"):
 
 
 def structureResp(item):
-    s = item['nom']
+    s = "**nom** : "
+    s += item['nom']
+    s += "  \n"
     if "complement" in item:
+        s += "**infos additionnelles** : "
         s += item['complement']
-    s+= item['id']
+        s += "  \n"
+    s+= "id: " + item['id']
+    s+= "  \n"
+
     file = getS3url(item['id'])
 
     ret = {
